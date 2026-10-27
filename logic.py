@@ -19,9 +19,12 @@ def _rejected(message):
 
 
 def _holds(condition, state, decisions):
-    """True when the condition ({"item": id} or {"decision": id, "value": v}) is met; "not": True flips it."""
+    """True when the condition is met. Forms: {"item": id}, {"decision": id, "value": v}, {"decision": id, "any": True}.
+    "not": True flips the result."""
     if "item" in condition:
         met = condition["item"] in state["inventory"]
+    elif condition.get("any"):
+        met = condition["decision"] in decisions
     else:
         met = decisions.get(condition["decision"]) == condition["value"]
     return not met if condition.get("not") else met
@@ -158,6 +161,7 @@ def scene_view(db_path):
             "title": ending["title"],
             "text": ending["text"],
             "result": ending["result"],
+            "kicker": ending["kicker"],
         }
         return view
     for target, move in scene.get("moves", {}).items():

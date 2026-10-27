@@ -1,46 +1,38 @@
-# Story — "Last Curtain" (working title)
+# Story — "Where's Otto?"
 
-Horror, ~10 minutes. Set in the Oslo Opera House (Operahuset) in Bjørvika, with the Barcode skyline glowing across the water.
+A windy autumn day in St. Hanshaugen park, Oslo. Benjamin Ernesto Aaron Hajdarpasic is minding his friend's white golden retriever Otto for the weekend. He is flirting with Sofie on a bench when Otto slips away with his teal leash. Benjamin has to use his detective skills to find him before something terrible happens.
 
-You are a night cleaner. After the final performance of the season the doors lock themselves and the lights in the Barcode towers outside go out one by one. Something is still singing on the stage.
+Look: pixel art. Dog-paw buttons, a pixelated autumn park with wind-blown orange and yellow leaves, and pixel sprites of Benjamin (dark hair, light stubble, dark green Barbour-style coat with the collar up, jeans, black leather boots), Sofie and Otto.
 
-## Scenes (5)
+## Scenes (7)
 
 | id | Scene | Notes |
 |----|-------|-------|
-| `foyer` | Main Foyer — start | Glass wall facing the fjord, the oak "Wave Wall". Exits: box office, backstage (locked), roof terrace (later). |
-| `box_office` | Box Office | Drawer holds the **stage door key**. |
-| `backstage` | Backstage corridor — locked | Needs the stage door key. Leads to the stage (later). |
-| `stage` | Main stage (later feature) | The singer. Remembered decision: answer her or stay silent. |
-| `roof` | The white marble roof (later feature) | Escape route towards the Barcode towers. |
+| `bench` | The Bench (start) | Decision `sofie`. Exits stay locked until it is made. |
+| `pond` | The Pond | Sofie finds paw prints only if she is helping. |
+| `kiosk` | The Hot-Dog Kiosk | Item `sausage`. |
+| `playground` | The Playground | Item `binoculars` (a child's toy pair). |
+| `hill` | The Top of the Hill | Decision `scan` (needs the binoculars) shows Otto on the tram tracks and unlocks `tramstreet`. |
+| `carstreet` | The Busy Road | Safe dead end with a hint from a delivery driver. |
+| `tramstreet` | The Tram Tracks | Decision `rescue`, then `finish`. |
 
-## Items (2, reusable, never consumed)
+## Items (reusable, never consumed)
 
-- `stage_door_key` — in the box office drawer. Unlocks `backstage`.
-- `music_box` — (later feature) backstage. Calms or angers the singer depending on the decision.
+- `sausage`: lets Benjamin lure Otto calmly.
+- `binoculars`: lets Benjamin spot Otto from the hill.
 
-## Endings (2, later feature)
+## Decisions (each once, remembered)
 
-- **Escape:** the player wears the `porcelain_mask`, kept the lights off and stayed silent on stage, so the singer lets them reach the roof.
-- **Encore:** the player answered her; she takes the final bow with them.
+- `sofie`: `help` or `flirt`.
+- `scan`: `tram` (only with the binoculars).
+- `rescue`: `treat` (only with the sausage), `grab`, or `shout`.
+- `finish` (after a calm rescue): `thank` (only if she helped), `apologize` (only if he kept flirting) or `brag`.
 
-(The final design, with four endings, is described under "Consequences" below.)
+## Endings
 
-## First feature (this task)
-
-Only `foyer`, `box_office`, `backstage` and `stage_door_key`. The rest comes in later features.
-
-## Consequences (more-consequences branch)
-
-Two remembered decisions steer the night:
-
-- **Lights** (foyer, once): `on` or `off`.
-  - `on` lets you find the **tin music box** backstage, but the singer is then watching: standing still is no longer possible.
-  - `off` keeps you hidden, but the music box is out of reach in the dark.
-- **The singer** (stage, once). Which options appear depends on the lights and your items:
-  - Answer her → **Encore** (lost).
-  - Say nothing (lights not on) + porcelain mask → climb to the roof → **The Last Curtain** (survived).
-  - Sprint for the stair (lights on) → **Caught in the Light** (lost).
-  - Wind the music box (holding it) → **The Last Aria** (survived, best ending).
-
-Four endings: two survived, two lost.
+| id | Result | How |
+|----|--------|-----|
+| `love` | won (best) | help, scan, treat, thank: Sofie writes her number on his hand. |
+| `nonumber` | won | Otto is safe but Benjamin brags or apologizes: she leaves without her number. |
+| `tram` | lost | `grab`: Otto bolts along the tracks and is hit by a tram. |
+| `car` | lost | `shout`: Otto bolts into the road and is hit by a car. |

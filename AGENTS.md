@@ -12,7 +12,8 @@ A text mystery game for a university course (Introduction to Programming, Nova S
 - `app.py` — Streamlit screens only.
 - `logic.py` — the rules: which actions are allowed, what they change.
 - `db.py` — SQLite storage (`plottwist.db`, never committed).
-- `story.py` — the story content (scenes, items, conditions), separate from player progress.
+- `story.py` — the story content (scenes, items, conditions, endings), separate from player progress.
+- `sprites.py` — the pixel art (background, characters, scene pictures) drawn as SVG. No game rules in here.
 - `tests/` — pytest tests. `docs/product-brief.md` — the business requirements. `specs/` — one spec per task.
 
 ## Rules
