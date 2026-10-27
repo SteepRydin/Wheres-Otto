@@ -21,8 +21,10 @@ You are a night cleaner. After the final performance of the season the doors loc
 
 ## Endings (2, later feature)
 
-- **Escape:** the player has the `music_box` and stayed silent on stage, so the singer lets them reach the roof.
-- **Encore:** the player answered her (or has no `music_box`); she takes the final bow with them.
+- **Escape:** the player wears the `porcelain_mask`, kept the lights off and stayed silent on stage, so the singer lets them reach the roof.
+- **Encore:** the player answered her; she takes the final bow with them.
+
+(The final design, with four endings, is described under "Consequences" below.)
 
 ## First feature (this task)
 
