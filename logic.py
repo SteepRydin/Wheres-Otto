@@ -1,0 +1,151 @@
+"""The rules of Last Curtain: which actions are allowed and what they change.
+
+Every action either is rejected (nothing is saved) or is accepted (saved in one step).
+Actions return {"ok": bool, "message": str}.
+"""
+
+import db
+import story
+
+GAME_OVER = "The story is over. Start a new game to play again."
+
+
+def _accepted(message):
+    return {"ok": True, "message": message}
+
+
+def _rejected(message):
+    return {"ok": False, "message": message}
+
+
+def _holds(condition, state, decisions):
+    """True when the condition ({"item": id} or {"decision": id, "value": v}) is met."""
+    if "item" in condition:
+        return condition["item"] in state["inventory"]
+    return decisions.get(condition["decision"]) == condition["value"]
+
+
+def new_game(db_path):
+    """Start a fresh game (replacing any save) and return its state."""
+    db.new_game(db_path, story.START_SCENE)
+    return load_game(db_path)
+
+
+def start_over(db_path, confirmed=False):
+    """Start a new game. Replacing an existing save needs confirmed=True."""
+    if db.load_state(db_path) is not None and not confirmed:
+        return _rejected("Starting over erases your progress. Confirm to start a new game.")
+    new_game(db_path)
+    return _accepted("A new night begins. The doors are locked behind you.")
+
+
+def load_game(db_path):
+    """Return the saved state {"scene", "inventory", "ending"}, or None when no save exists."""
+    return db.load_state(db_path)
+
+
+def get_decisions(db_path):
+    """Return the remembered decisions as {decision: value}."""
+    return db.load_decisions(db_path)
+
+
+def go_to(db_path, scene_id):
+    """Move to another scene if the story offers that route and its conditions are met."""
+    state = load_game(db_path)
+    if state is None:
+        return _rejected("There is no game in progress.")
+    if state["ending"] is not None:
+        return _rejected(GAME_OVER)
+    move = story.SCENES[state["scene"]].get("moves", {}).get(scene_id)
+    if move is None:
+        return _rejected("You cannot get there from here.")
+    decisions = get_decisions(db_path)
+    for requirement in move.get("requires", []):
+        if not _holds(requirement, state, decisions):
+            return _rejected(requirement["blocked"])
+    db.save(db_path, scene=scene_id, ending=story.SCENES[scene_id].get("ending"))
+    return _accepted(move["message"])
+
+
+def takeable_items(db_path):
+    """Return the ids of items that can still be taken in the current scene."""
+    state = load_game(db_path)
+    if state is None or state["ending"] is not None:
+        return []
+    return [
+        item_id
+        for item_id, item in story.ITEMS.items()
+        if item["location"] == state["scene"] and item_id not in state["inventory"]
+    ]
+
+
+def take_item(db_path, item_id):
+    """Collect an item that lies in the current scene, once per game."""
+    state = load_game(db_path)
+    if state is None:
+        return _rejected("There is no game in progress.")
+    if state["ending"] is not None:
+        return _rejected(GAME_OVER)
+    item = story.ITEMS.get(item_id)
+    if item is None:
+        return _rejected("There is no such thing here.")
+    if item_id in state["inventory"]:
+        return _rejected("You already have the " + item["name"].lower() + ".")
+    if item["location"] != state["scene"]:
+        return _rejected("There is nothing like that to take here.")
+    db.save(db_path, add_item=item_id)
+    return _accepted(item["take_message"])
+
+
+def decide(db_path, decision, value):
+    """Make a one-time decision offered by the current scene. Some choices end the game."""
+    state = load_game(db_path)
+    if state is None:
+        return _rejected("There is no game in progress.")
+    if state["ending"] is not None:
+        return _rejected(GAME_OVER)
+    for choice in story.SCENES[state["scene"]].get("choices", []):
+        if choice["decision"] == decision and choice["value"] == value:
+            break
+    else:
+        return _rejected("That is not a choice you can make here.")
+    if decision in get_decisions(db_path):
+        return _rejected("You have already made that choice. It cannot be unmade.")
+    db.save(db_path, decision=(decision, value), ending=choice.get("ending"))
+    return _accepted(choice["message"])
+
+
+def scene_view(db_path):
+    """Everything the screen needs to show the current moment, or None when there is no game."""
+    state = load_game(db_path)
+    if state is None:
+        return None
+    decisions = get_decisions(db_path)
+    scene = story.SCENES[state["scene"]]
+    inventory = [
+        {"id": item_id, "name": story.ITEMS[item_id]["name"], "description": story.ITEMS[item_id]["description"]}
+        for item_id in state["inventory"]
+    ]
+    view = {"scene": state["scene"], "title": scene["title"], "text": scene["text"],
+            "moves": [], "takeable": [], "choices": [], "inventory": inventory, "ending": None}
+    for change in scene.get("changes", []):
+        if _holds(change["if"], state, decisions):
+            view["text"] = change["text"]
+            break
+    if state["ending"] is not None:
+        ending = story.ENDINGS[state["ending"]]
+        view["ending"] = {"id": state["ending"], "title": ending["title"], "text": ending["text"]}
+        return view
+    for target, move in scene.get("moves", {}).items():
+        blocked = None
+        for requirement in move.get("requires", []):
+            if not _holds(requirement, state, decisions):
+                blocked = requirement["blocked"]
+                break
+        view["moves"].append({"to": target, "label": move["label"], "blocked": blocked})
+    for item_id in takeable_items(db_path):
+        view["takeable"].append({"id": item_id, "label": "Take the " + story.ITEMS[item_id]["name"].lower()})
+    if scene.get("choices") and not any(c["decision"] in decisions for c in scene["choices"]):
+        for choice in scene["choices"]:
+            view["choices"].append({"decision": choice["decision"], "value": choice["value"], "label": choice["label"]})
+    return view
