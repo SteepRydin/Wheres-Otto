@@ -40,6 +40,8 @@ st.markdown(
         .whisper { border-left: 3px solid var(--gold); background: rgba(201, 162, 75, 0.07); padding: 0.7rem 1rem; margin: 0 0 1.2rem 0; font-size: 1.05rem; }
         .whisper.blocked { border-left-color: var(--blood); background: rgba(155, 28, 49, 0.12); }
         .ending { text-align: center; border: 1px solid var(--gold); background: rgba(10, 6, 12, 0.7); padding: 1.6rem 1.4rem; margin: 1rem 0 1.5rem 0; box-shadow: 0 0 40px rgba(155, 28, 49, 0.35); }
+        .ending.lost { border-color: var(--blood); box-shadow: 0 0 50px rgba(155, 28, 49, 0.6); }
+        .ending.lost .ending-title { color: #d8556a; }
         .ending .kicker { font-family: 'Cinzel', Georgia, serif; letter-spacing: 0.4em; font-size: 0.75rem; color: var(--blood); }
         .ending .ending-title { font-family: 'Cinzel', Georgia, serif; font-size: 2.2rem; color: var(--gold); margin: 0.4rem 0 1rem 0; }
         .ending p { font-size: 1.15rem; line-height: 1.75; font-style: italic; }
@@ -127,8 +129,10 @@ def show_title():
 
 
 def show_ending(view):
+    lost = view["ending"]["result"] == "lost"
+    kicker = "THE END · YOU DID NOT SURVIVE" if lost else "THE END · YOU SURVIVED"
     st.markdown(
-        '<div class="ending"><div class="kicker">THE END</div><div class="ending-title">'
+        '<div class="ending ' + ("lost" if lost else "") + '"><div class="kicker">' + kicker + '</div><div class="ending-title">'
         + html.escape(view["ending"]["title"])
         + "</div><p>"
         + html.escape(view["ending"]["text"])

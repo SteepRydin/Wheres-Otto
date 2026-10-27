@@ -27,3 +27,18 @@ You are a night cleaner. After the final performance of the season the doors loc
 ## First feature (this task)
 
 Only `foyer`, `box_office`, `backstage` and `stage_door_key`. The rest comes in later features.
+
+## Consequences (more-consequences branch)
+
+Two remembered decisions steer the night:
+
+- **Lights** (foyer, once): `on` or `off`.
+  - `on` lets you find the **tin music box** backstage, but the singer is then watching: standing still is no longer possible.
+  - `off` keeps you hidden, but the music box is out of reach in the dark.
+- **The singer** (stage, once). Which options appear depends on the lights and your items:
+  - Answer her → **Encore** (lost).
+  - Say nothing (lights not on) + porcelain mask → climb to the roof → **The Last Curtain** (survived).
+  - Sprint for the stair (lights on) → **Caught in the Light** (lost).
+  - Wind the music box (holding it) → **The Last Aria** (survived, best ending).
+
+Four endings: two survived, two lost.

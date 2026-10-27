@@ -19,10 +19,20 @@ def _rejected(message):
 
 
 def _holds(condition, state, decisions):
-    """True when the condition ({"item": id} or {"decision": id, "value": v}) is met."""
+    """True when the condition ({"item": id} or {"decision": id, "value": v}) is met; "not": True flips it."""
     if "item" in condition:
-        return condition["item"] in state["inventory"]
-    return decisions.get(condition["decision"]) == condition["value"]
+        met = condition["item"] in state["inventory"]
+    else:
+        met = decisions.get(condition["decision"]) == condition["value"]
+    return not met if condition.get("not") else met
+
+
+def _first_unmet(requirements, state, decisions):
+    """Return the explanation of the first unmet requirement, or None when all are met."""
+    for requirement in requirements:
+        if not _holds(requirement, state, decisions):
+            return requirement["blocked"]
+    return None
 
 
 def new_game(db_path):
@@ -59,10 +69,9 @@ def go_to(db_path, scene_id):
     move = story.SCENES[state["scene"]].get("moves", {}).get(scene_id)
     if move is None:
         return _rejected("You cannot get there from here.")
-    decisions = get_decisions(db_path)
-    for requirement in move.get("requires", []):
-        if not _holds(requirement, state, decisions):
-            return _rejected(requirement["blocked"])
+    blocked = _first_unmet(move.get("requires", []), state, get_decisions(db_path))
+    if blocked is not None:
+        return _rejected(blocked)
     db.save(db_path, scene=scene_id, ending=story.SCENES[scene_id].get("ending"))
     return _accepted(move["message"])
 
@@ -72,10 +81,13 @@ def takeable_items(db_path):
     state = load_game(db_path)
     if state is None or state["ending"] is not None:
         return []
+    decisions = get_decisions(db_path)
     return [
         item_id
         for item_id, item in story.ITEMS.items()
-        if item["location"] == state["scene"] and item_id not in state["inventory"]
+        if item["location"] == state["scene"]
+        and item_id not in state["inventory"]
+        and _first_unmet(item.get("requires", []), state, decisions) is None
     ]
 
 
@@ -93,6 +105,9 @@ def take_item(db_path, item_id):
         return _rejected("You already have the " + item["name"].lower() + ".")
     if item["location"] != state["scene"]:
         return _rejected("There is nothing like that to take here.")
+    blocked = _first_unmet(item.get("requires", []), state, get_decisions(db_path))
+    if blocked is not None:
+        return _rejected(blocked)
     db.save(db_path, add_item=item_id)
     return _accepted(item["take_message"])
 
@@ -109,8 +124,12 @@ def decide(db_path, decision, value):
             break
     else:
         return _rejected("That is not a choice you can make here.")
-    if decision in get_decisions(db_path):
+    decisions = get_decisions(db_path)
+    if decision in decisions:
         return _rejected("You have already made that choice. It cannot be unmade.")
+    blocked = _first_unmet(choice.get("requires", []), state, decisions)
+    if blocked is not None:
+        return _rejected(blocked)
     db.save(db_path, decision=(decision, value), ending=choice.get("ending"))
     return _accepted(choice["message"])
 
@@ -134,18 +153,22 @@ def scene_view(db_path):
             break
     if state["ending"] is not None:
         ending = story.ENDINGS[state["ending"]]
-        view["ending"] = {"id": state["ending"], "title": ending["title"], "text": ending["text"]}
+        view["ending"] = {
+            "id": state["ending"],
+            "title": ending["title"],
+            "text": ending["text"],
+            "result": ending["result"],
+        }
         return view
     for target, move in scene.get("moves", {}).items():
-        blocked = None
-        for requirement in move.get("requires", []):
-            if not _holds(requirement, state, decisions):
-                blocked = requirement["blocked"]
-                break
+        blocked = _first_unmet(move.get("requires", []), state, decisions)
         view["moves"].append({"to": target, "label": move["label"], "blocked": blocked})
     for item_id in takeable_items(db_path):
         view["takeable"].append({"id": item_id, "label": "Take the " + story.ITEMS[item_id]["name"].lower()})
-    if scene.get("choices") and not any(c["decision"] in decisions for c in scene["choices"]):
-        for choice in scene["choices"]:
-            view["choices"].append({"decision": choice["decision"], "value": choice["value"], "label": choice["label"]})
+    for choice in scene.get("choices", []):
+        if choice["decision"] in decisions:
+            continue
+        if _first_unmet(choice.get("requires", []), state, decisions) is not None:
+            continue
+        view["choices"].append({"decision": choice["decision"], "value": choice["value"], "label": choice["label"]})
     return view
