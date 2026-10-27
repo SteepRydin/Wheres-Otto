@@ -14,3 +14,8 @@ package = false
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+
+[dependency-groups]
+dev = [
+    "quickjs>=1.19.4",
+]

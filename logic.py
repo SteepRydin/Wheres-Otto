@@ -49,7 +49,7 @@ def start_over(db_path, confirmed=False):
     if db.load_state(db_path) is not None and not confirmed:
         return _rejected("Starting over erases your progress. Confirm to start a new game.")
     new_game(db_path)
-    return _accepted("A new night begins. The doors are locked behind you.")
+    return _accepted("A new walk begins in St. Hanshaugen.")
 
 
 def load_game(db_path):

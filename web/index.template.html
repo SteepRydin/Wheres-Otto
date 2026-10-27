@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Where's Otto? A pixel-art detective story set on a windy autumn day in St. Hanshaugen, Oslo. Find the lost golden retriever. Win Sofie's heart. Do not get anyone's dog hit by a tram.">
+<meta name="theme-color" content="#181422">
+<title>Where's Otto?</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%23181422'/%3E%3Cpath fill='%23f7f0dc' d='M3 3h3v3h-3zM10 3h3v3h-3zM1 7h3v3h-3zM12 7h3v3h-3zM5 8h6v5h-6z'/%3E%3Cpath fill='%2319b7b0' d='M5 6h6v1h-6z'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<style>
+{{STYLE}}
+</style>
+</head>
+<body>
+<div class="park-bg" id="park-bg" aria-hidden="true"></div>
+<div class="wind" id="wind" aria-hidden="true"></div>
+<div class="sr-only" id="live" aria-live="polite"></div>
+<main class="panel" id="app">
+<noscript>Where's Otto? needs JavaScript to run. Please turn it on and reload the page.</noscript>
+</main>
+<script>var STORY = {{STORY}};</script>
+<script>var ART_DATA = {{ART_DATA}};</script>
+<script>
+{{ENGINE}}
+</script>
+<script>
+{{ART}}
+</script>
+<script>
+{{UI}}
+</script>
+</body>
+</html>

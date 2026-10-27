@@ -14,6 +14,7 @@ A text mystery game for a university course (Introduction to Programming, Nova S
 - `db.py` — SQLite storage (`plottwist.db`, never committed).
 - `story.py` — the story content (scenes, items, conditions, endings), separate from player progress.
 - `sprites.py` — the pixel art (background, characters, scene pictures) drawn as SVG. No game rules in here.
+- `web/` and `build_web.py` — the single-file web version. `uv run python build_web.py` writes `docs/index.html` (the page to publish). Run it after changing `story.py`, `sprites.py`, `logic.py` rules or anything in `web/`; the tests fail if `docs/index.html` is out of date or the JavaScript engine disagrees with `logic.py`.
 - `tests/` — pytest tests. `docs/product-brief.md` — the business requirements. `specs/` — one spec per task.
 
 ## Rules

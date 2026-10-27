@@ -396,3 +396,22 @@ def scene_art(scene, decisions, ending=None, lost=False):
     if ending in ("tram", "car"):
         body = body.replace('<path fill="#7a0f1f"', '<path opacity="0.28" fill="#7a0f1f"')
     return _svg(STRIP_W, STRIP_H, body, "strip-svg")
+
+
+def export_for_web():
+    """Everything the single-file web version needs to draw exactly the same pictures in JavaScript."""
+    base = _strip_background("bench")
+    return {
+        "parkBackground": park_background(),
+        "stripW": STRIP_W, "stripH": STRIP_H, "ground": GROUND,
+        "personW": PERSON_W, "personH": PERSON_H, "ottoRunH": OTTO_RUN_H, "ottoSitH": OTTO_SIT_H,
+        "teal": TEAL, "tealDark": TEAL_DARK,
+        "benjamin": _grid(BENJAMIN_ROWS, BENJAMIN_PALETTE), "sofie": _grid(SOFIE_ROWS, SOFIE_PALETTE),
+        "ottoRun": OTTO_RUN, "ottoSit": OTTO_SIT, "heart": _heart(0, 0), "tram": _tram(0, 0), "car": _car(0, 0),
+        "base": _paths(base),
+        "extras": {
+            "carstreet": _paths(_strip_background("carstreet")[len(base):]),
+            "tramstreet": _paths(_strip_background("tramstreet")[len(base):]),
+        },
+        "props": {scene: _paths(_strip_props(scene, {})) for scene in ("bench", "pond", "kiosk", "playground", "hill")},
+    }
